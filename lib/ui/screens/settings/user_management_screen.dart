@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:surakshith/data/models/user_model.dart';
 import 'package:surakshith/data/providers/user_provider.dart';
+import 'package:surakshith/data/providers/client_provider.dart';
 
 class UserManagementScreen extends StatefulWidget {
   const UserManagementScreen({super.key});
@@ -264,7 +266,7 @@ class ExistingUsersTab extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -276,8 +278,12 @@ class ExistingUsersTab extends StatelessWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFE91E63), Color(0xFFFF6E40)],
+                    gradient: LinearGradient(
+                      colors: user.isAuditor
+                          ? [const Color(0xFFE91E63), const Color(0xFFFF6E40)]
+                          : user.isClientAdmin
+                              ? [const Color(0xFF9C27B0), const Color(0xFFE040FB)]
+                              : [const Color(0xFF2196F3), const Color(0xFF00BCD4)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -285,7 +291,7 @@ class ExistingUsersTab extends StatelessWidget {
                   ),
                   child: Center(
                     child: Text(
-                      user.email.substring(0, 1).toUpperCase(),
+                      user.displayName.substring(0, 1).toUpperCase(),
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: Platform.isIOS ? 18 : 20,
@@ -295,18 +301,67 @@ class ExistingUsersTab extends StatelessWidget {
                   ),
                 ),
                 title: Text(
-                  user.email,
+                  user.displayName,
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: Platform.isIOS ? 14 : 15,
                   ),
                 ),
-                subtitle: createdAt != null
-                    ? Text(
-                        'Created: ${createdAt.toString().split('.')[0]}',
-                        style: TextStyle(fontSize: Platform.isIOS ? 11 : 12, color: Colors.grey[600]),
-                      )
-                    : null,
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      user.email,
+                      style: TextStyle(fontSize: Platform.isIOS ? 11 : 12, color: Colors.grey[600]),
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: user.isAuditor
+                                ? const Color(0xFFE91E63).withValues(alpha: 0.1)
+                                : user.isClientAdmin
+                                    ? const Color(0xFF9C27B0).withValues(alpha: 0.1)
+                                    : const Color(0xFF2196F3).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            user.role.displayName,
+                            style: TextStyle(
+                              fontSize: Platform.isIOS ? 10 : 11,
+                              fontWeight: FontWeight.w600,
+                              color: user.isAuditor
+                                  ? const Color(0xFFE91E63)
+                                  : user.isClientAdmin
+                                      ? const Color(0xFF9C27B0)
+                                      : const Color(0xFF2196F3),
+                            ),
+                          ),
+                        ),
+                        if (!user.isActive) ...[
+                          const SizedBox(width: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              'Inactive',
+                              style: TextStyle(
+                                fontSize: Platform.isIOS ? 10 : 11,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -340,22 +395,42 @@ class _NewUsersTabState extends State<NewUsersTab> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _nameController = TextEditingController();
   bool _obscurePassword = true;
+  UserRole _selectedRole = UserRole.auditor;
+  String? _selectedClientId;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _nameController.dispose();
     super.dispose();
   }
 
   Future<void> _createUser() async {
     if (_formKey.currentState!.validate()) {
+      // Validate client selection for client users
+      if (_selectedRole != UserRole.auditor && _selectedClientId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Please select a client for this user'),
+            backgroundColor: const Color(0xFFE53935),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        );
+        return;
+      }
+
       final userProvider = Provider.of<UserProvider>(context, listen: false);
 
       final success = await userProvider.addUser(
         email: _emailController.text.trim(),
         password: _passwordController.text,
+        role: _selectedRole,
+        clientId: _selectedRole != UserRole.auditor ? _selectedClientId : null,
+        name: _nameController.text.trim().isNotEmpty ? _nameController.text.trim() : null,
       );
 
       if (mounted) {
@@ -375,6 +450,11 @@ class _NewUsersTabState extends State<NewUsersTab> {
         if (success) {
           _emailController.clear();
           _passwordController.clear();
+          _nameController.clear();
+          setState(() {
+            _selectedRole = UserRole.auditor;
+            _selectedClientId = null;
+          });
         }
       }
     }
@@ -427,6 +507,121 @@ class _NewUsersTabState extends State<NewUsersTab> {
               ),
             ),
             const SizedBox(height: 32),
+
+            // Role Dropdown
+            DropdownButtonFormField<UserRole>(
+              value: _selectedRole,
+              decoration: InputDecoration(
+                labelText: 'User Role',
+                prefixIcon: const Icon(Icons.badge_outlined, color: Color(0xFFE91E63)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey[300]!),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey[300]!),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFE91E63), width: 2),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+              ),
+              items: UserRole.values.map((role) {
+                return DropdownMenuItem(
+                  value: role,
+                  child: Text(role.displayName),
+                );
+              }).toList(),
+              onChanged: (role) {
+                setState(() {
+                  _selectedRole = role ?? UserRole.auditor;
+                  // Reset client selection when role changes
+                  if (_selectedRole == UserRole.auditor) {
+                    _selectedClientId = null;
+                  }
+                });
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // Client Dropdown (only visible for client roles)
+            if (_selectedRole != UserRole.auditor)
+              Consumer<ClientProvider>(
+                builder: (context, clientProvider, _) {
+                  final clients = clientProvider.getAllClients();
+                  return Column(
+                    children: [
+                      DropdownButtonFormField<String>(
+                        value: _selectedClientId,
+                        decoration: InputDecoration(
+                          labelText: 'Select Client (Hotel)',
+                          prefixIcon: const Icon(Icons.business_outlined, color: Color(0xFFE91E63)),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.grey[300]!),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.grey[300]!),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Color(0xFFE91E63), width: 2),
+                          ),
+                          filled: true,
+                          fillColor: Colors.white,
+                        ),
+                        hint: const Text('Select a client'),
+                        items: clients.map((client) {
+                          return DropdownMenuItem(
+                            value: client.id,
+                            child: Text(client.name),
+                          );
+                        }).toList(),
+                        onChanged: (clientId) {
+                          setState(() {
+                            _selectedClientId = clientId;
+                          });
+                        },
+                        validator: (value) {
+                          if (_selectedRole != UserRole.auditor && value == null) {
+                            return 'Please select a client';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  );
+                },
+              ),
+
+            // Name Field (optional)
+            TextFormField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                labelText: 'Display Name (optional)',
+                prefixIcon: const Icon(Icons.person_outlined, color: Color(0xFFE91E63)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey[300]!),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey[300]!),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFE91E63), width: 2),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 16),
 
             // Email Field
             TextFormField(
@@ -520,7 +715,7 @@ class _NewUsersTabState extends State<NewUsersTab> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     elevation: 0,
-                    shadowColor: const Color(0xFFE91E63).withOpacity(0.3),
+                    shadowColor: const Color(0xFFE91E63).withValues(alpha: 0.3),
                   ),
                   child: userProvider.isLoading
                       ? const SizedBox(

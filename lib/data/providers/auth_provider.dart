@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:surakshith/data/repositories/auth_repository.dart';
+import 'package:surakshith/services/fcm_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthRepository _authRepository = AuthRepository();
@@ -60,6 +61,17 @@ class AuthProvider extends ChangeNotifier {
       );
 
       _currentUser = user;
+
+      // Save FCM token to Firestore after successful login
+      if (user != null) {
+        try {
+          await FCMService().saveTokenToFirestore(user.uid);
+        } catch (e) {
+          // Don't fail login if FCM token save fails
+          debugPrint('Failed to save FCM token: $e');
+        }
+      }
+
       _setLoading(false);
       notifyListeners();
       return true;
@@ -74,6 +86,11 @@ class AuthProvider extends ChangeNotifier {
   Future<void> logout() async {
     _setLoading(true);
     try {
+      // Remove FCM token from Firestore before signing out
+      if (_currentUser != null) {
+        await FCMService().removeTokenFromFirestore(_currentUser!.uid);
+      }
+
       await _authRepository.signOut();
       _currentUser = null;
       _setLoading(false);

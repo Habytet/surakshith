@@ -1,0 +1,164 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ============================================
+    // HELPER FUNCTIONS
+    // ============================================
+
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Get user data
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    // Check if user is an auditor
+    function isAuditor() {
+      return isAuthenticated() && getUserData().role == 'auditor';
+    }
+
+    // Check if user belongs to a specific client
+    function isClientUser(clientId) {
+      return isAuthenticated() &&
+             getUserData().clientId == clientId &&
+             getUserData().isActive == true;
+    }
+
+    // Check if user is a client admin for specific client
+    function isClientAdmin(clientId) {
+      return isAuthenticated() &&
+             getUserData().clientId == clientId &&
+             getUserData().role == 'clientAdmin' &&
+             getUserData().isActive == true;
+    }
+
+    // Check if user is a client staff for specific client
+    function isClientStaff(clientId) {
+      return isAuthenticated() &&
+             getUserData().clientId == clientId &&
+             getUserData().role == 'clientStaff' &&
+             getUserData().isActive == true;
+    }
+
+    // Check if user is assigned to a task
+    function isAssignedTo(taskData) {
+      return isAuthenticated() &&
+             request.auth.token.email in taskData.assignedTo;
+    }
+
+    // Check if user owns a resource (created it)
+    function isOwner(resourceData) {
+      return isAuthenticated() &&
+             request.auth.token.email == resourceData.createdBy;
+    }
+
+    // ============================================
+    // USERS COLLECTION
+    // ============================================
+
+    match /users/{userId} {
+      // Anyone authenticated can read all users (for task assignment)
+      allow read: if isAuthenticated();
+
+      // Only auditors can create/update/delete users
+      allow create, update, delete: if isAuditor();
+    }
+
+    // ============================================
+    // TASKS COLLECTION
+    // ============================================
+
+    match /tasks/{taskId} {
+      // AUDITORS: Full access to all tasks
+      allow read, create, delete: if isAuditor();
+      allow update: if isAuditor();
+
+      // CLIENT ADMINS: Read tasks for their client
+      allow read: if isClientAdmin(resource.data.clientId);
+
+      // CLIENT STAFF: Read tasks assigned to them
+      allow read: if isClientStaff(resource.data.clientId) &&
+                     isAssignedTo(resource.data);
+
+      // CLIENT STAFF: Update only their assigned tasks (limited fields)
+      allow update: if isClientStaff(resource.data.clientId) &&
+                       isAssignedTo(resource.data) &&
+                       // Can only update specific fields
+                       request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly([
+                           'status',
+                           'staffComments',
+                           'staffImages',
+                           'complianceStatus',
+                           'startedAt',
+                           'completedAt'
+                         ]);
+    }
+
+    // ============================================
+    // TASK TEMPLATES (for repetitive tasks)
+    // ============================================
+
+    match /taskTemplates/{templateId} {
+      // Only auditors can manage templates
+      allow read, write: if isAuditor();
+    }
+
+    // ============================================
+    // NOTIFICATIONS COLLECTION
+    // ============================================
+
+    match /notifications/{notificationId} {
+      // Users can read their own notifications
+      allow read: if isAuthenticated() &&
+                     request.auth.uid == resource.data.userId;
+
+      // Users can update their own notifications (mark as read)
+      allow update: if isAuthenticated() &&
+                       request.auth.uid == resource.data.userId &&
+                       request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['isRead']);
+
+      // Users can delete their own notifications
+      allow delete: if isAuthenticated() &&
+                       request.auth.uid == resource.data.userId;
+
+      // System/Auditors can create notifications for any user
+      allow create: if isAuditor();
+    }
+
+    // ============================================
+    // CLIENTS COLLECTION (existing)
+    // ============================================
+
+    match /clients/{clientId} {
+      // Auditors have full access
+      allow read, write: if isAuditor();
+
+      // Client users can read their own client data
+      allow read: if isClientUser(clientId);
+
+      // Subcollections (projects, reports, etc.)
+      match /{document=**} {
+        // Auditors have full access
+        allow read, write: if isAuditor();
+
+        // Client users can read their client's data
+        allow read: if isClientUser(clientId);
+      }
+    }
+
+    // ============================================
+    // DEFAULT: DENY ALL
+    // ============================================
+
+    // Deny access to any other collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

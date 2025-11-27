@@ -12,6 +12,17 @@ enum UserRole {
       orElse: () => UserRole.clientStaff,
     );
   }
+
+  String get displayName {
+    switch (this) {
+      case UserRole.auditor:
+        return 'Auditor';
+      case UserRole.clientAdmin:
+        return 'Hotel Admin';
+      case UserRole.clientStaff:
+        return 'Hotel Staff';
+    }
+  }
 }
 
 class UserModel {
@@ -67,12 +78,22 @@ class UserModel {
   }
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
+    // Handle createdAt which can be Timestamp, int, or null
+    DateTime? createdAt;
+    if (map['createdAt'] != null) {
+      final createdAtValue = map['createdAt'];
+      if (createdAtValue is int) {
+        createdAt = DateTime.fromMillisecondsSinceEpoch(createdAtValue);
+      } else if (createdAtValue.runtimeType.toString().contains('Timestamp')) {
+        // Firestore Timestamp - convert to DateTime
+        createdAt = (createdAtValue as dynamic).toDate();
+      }
+    }
+
     return UserModel(
       id: map['id'] ?? '',
       email: map['email'] ?? '',
-      createdAt: map['createdAt'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(map['createdAt'])
-          : null,
+      createdAt: createdAt,
       uid: map['uid'] ?? '',
       role: map['role'] != null
           ? UserRole.fromJson(map['role'])
@@ -141,11 +162,4 @@ class UserModel {
         clientId.hashCode;
   }
 
-  bool _listEquals(List<String> a, List<String> b) {
-    if (a.length != b.length) return false;
-    for (int i = 0; i < a.length; i++) {
-      if (a[i] != b[i]) return false;
-    }
-    return true;
-  }
 }

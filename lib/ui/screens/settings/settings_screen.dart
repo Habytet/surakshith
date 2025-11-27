@@ -1,12 +1,17 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import 'package:surakshith/data/providers/task_generator_provider.dart';
 import 'package:surakshith/ui/screens/settings/user_management_screen.dart';
 import 'package:surakshith/ui/screens/settings/client_management_screen.dart';
 import 'package:surakshith/ui/screens/settings/audit_area_management_screen.dart';
 import 'package:surakshith/ui/screens/settings/responsible_person_management_screen.dart';
 import 'package:surakshith/ui/screens/settings/audit_issue_management_screen.dart';
 import 'package:surakshith/ui/screens/settings/sync_status_screen.dart';
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_dimensions.dart';
+import '../../../theme/app_text_styles.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -16,14 +21,20 @@ class SettingsScreen extends StatelessWidget {
     final user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F7F7),
-      body: CustomScrollView(
-        slivers: [
-          // Profile Header
-          SliverToBoxAdapter(
-            child: Container(
-              color: Colors.white,
-              padding: const EdgeInsets.fromLTRB(24, 60, 24, 32),
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: CustomScrollView(
+          slivers: [
+            // Profile Header
+            SliverToBoxAdapter(
+              child: Container(
+                color: AppColors.surface,
+                padding: const EdgeInsets.fromLTRB(
+                  AppDimensions.paddingXL,
+                  AppDimensions.paddingL,
+                  AppDimensions.paddingXL,
+                  AppDimensions.paddingL,
+                ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -33,15 +44,11 @@ class SettingsScreen extends StatelessWidget {
                         width: 64,
                         height: 64,
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFE91E63), Color(0xFFFF6E40)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
+                          gradient: AppColors.primaryGradient,
                           borderRadius: BorderRadius.circular(32),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFFE91E63).withOpacity(0.3),
+                              color: AppColors.primary.withValues(alpha: 0.3),
                               blurRadius: 12,
                               offset: const Offset(0, 4),
                             ),
@@ -50,36 +57,26 @@ class SettingsScreen extends StatelessWidget {
                         child: Center(
                           child: Text(
                             user?.email?.substring(0, 1).toUpperCase() ?? 'U',
-                            style: const TextStyle(
+                            style: AppTextStyles.h1.copyWith(
                               color: Colors.white,
                               fontSize: 28,
-                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: AppDimensions.spaceM),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               user?.displayName ?? 'User',
-                              style: TextStyle(
-                                fontSize: Platform.isIOS ? 20 : 24,
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF222222),
-                                letterSpacing: -0.5,
-                              ),
+                              style: AppTextStyles.h2,
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: AppDimensions.spaceXXS),
                             Text(
                               user?.email ?? 'user@example.com',
-                              style: TextStyle(
-                                fontSize: Platform.isIOS ? 13 : 15,
-                                color: Colors.grey[600],
-                                fontWeight: FontWeight.w400,
-                              ),
+                              style: AppTextStyles.subtitle,
                             ),
                           ],
                         ),
@@ -94,14 +91,17 @@ class SettingsScreen extends StatelessWidget {
           // Management Section
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 32, 24, 12),
+              padding: const EdgeInsets.fromLTRB(
+                AppDimensions.paddingXL,
+                AppDimensions.paddingL,
+                AppDimensions.paddingXL,
+                AppDimensions.paddingS,
+              ),
               child: Text(
                 'Management',
-                style: TextStyle(
-                  fontSize: Platform.isIOS ? 12 : 13,
+                style: AppTextStyles.overline.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: Colors.grey[700],
-                  letterSpacing: 0.5,
+                  color: AppColors.textSecondary,
                 ),
               ),
             ),
@@ -109,13 +109,13 @@ class SettingsScreen extends StatelessWidget {
 
           SliverToBoxAdapter(
             child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 24),
+              margin: const EdgeInsets.symmetric(horizontal: AppDimensions.marginL),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(AppDimensions.radiusM),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: AppColors.shadow,
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -128,8 +128,8 @@ class SettingsScreen extends StatelessWidget {
                     icon: Icons.people_outline,
                     title: 'User Management',
                     subtitle: 'Manage team members and permissions',
-                    iconColor: const Color(0xFFE91E63),
-                    iconBgColor: const Color(0xFFE91E63).withOpacity(0.1),
+                    iconColor: AppColors.primary,
+                    iconBgColor: AppColors.primary.withValues(alpha: 0.1),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -144,7 +144,7 @@ class SettingsScreen extends StatelessWidget {
                     title: 'Client Management',
                     subtitle: 'Manage clients and their projects',
                     iconColor: const Color(0xFF3F51B5),
-                    iconBgColor: const Color(0xFF3F51B5).withOpacity(0.1),
+                    iconBgColor: const Color(0xFF3F51B5).withValues(alpha: 0.1),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -161,9 +161,94 @@ class SettingsScreen extends StatelessWidget {
           // Audit Section
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 32, 24, 12),
+              padding: const EdgeInsets.fromLTRB(
+                AppDimensions.paddingXL,
+                AppDimensions.paddingL,
+                AppDimensions.paddingXL,
+                AppDimensions.paddingS,
+              ),
               child: Text(
                 'Audit Configuration',
+                style: AppTextStyles.overline.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
+          ),
+
+          SliverToBoxAdapter(
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  _buildSettingsTile(
+                    context,
+                    icon: Icons.folder_outlined,
+                    title: 'Audit Areas',
+                    subtitle: 'Configure audit area templates',
+                    iconColor: const Color(0xFF9C27B0),
+                    iconBgColor: const Color(0xFF9C27B0).withValues(alpha: 0.1),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AuditAreaManagementScreen(),
+                      ),
+                    ),
+                    showDivider: true,
+                  ),
+                  _buildSettingsTile(
+                    context,
+                    icon: Icons.person_outline_outlined,
+                    title: 'Responsible Persons',
+                    subtitle: 'Manage audit responsibility assignments',
+                    iconColor: const Color(0xFFFF9800),
+                    iconBgColor: const Color(0xFFFF9800).withValues(alpha: 0.1),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ResponsiblePersonManagementScreen(),
+                      ),
+                    ),
+                    showDivider: true,
+                  ),
+                  _buildSettingsTile(
+                    context,
+                    icon: Icons.warning_amber_outlined,
+                    title: 'Audit Issues',
+                    subtitle: 'Define issue categories and priorities',
+                    iconColor: const Color(0xFFF44336),
+                    iconBgColor: const Color(0xFFF44336).withValues(alpha: 0.1),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AuditIssueManagementScreen(),
+                      ),
+                    ),
+                    showDivider: false,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Tasks Section
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 32, 24, 12),
+              child: Text(
+                'Tasks',
                 style: TextStyle(
                   fontSize: Platform.isIOS ? 12 : 13,
                   fontWeight: FontWeight.w600,
@@ -182,7 +267,7 @@ class SettingsScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -190,50 +275,47 @@ class SettingsScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  _buildSettingsTile(
-                    context,
-                    icon: Icons.folder_outlined,
-                    title: 'Audit Areas',
-                    subtitle: 'Configure audit area templates',
-                    iconColor: const Color(0xFF9C27B0),
-                    iconBgColor: const Color(0xFF9C27B0).withOpacity(0.1),
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const AuditAreaManagementScreen(),
-                      ),
-                    ),
-                    showDivider: true,
-                  ),
-                  _buildSettingsTile(
-                    context,
-                    icon: Icons.person_outline_outlined,
-                    title: 'Responsible Persons',
-                    subtitle: 'Manage audit responsibility assignments',
-                    iconColor: const Color(0xFFFF9800),
-                    iconBgColor: const Color(0xFFFF9800).withOpacity(0.1),
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ResponsiblePersonManagementScreen(),
-                      ),
-                    ),
-                    showDivider: true,
-                  ),
-                  _buildSettingsTile(
-                    context,
-                    icon: Icons.warning_amber_outlined,
-                    title: 'Audit Issues',
-                    subtitle: 'Define issue categories and priorities',
-                    iconColor: const Color(0xFFF44336),
-                    iconBgColor: const Color(0xFFF44336).withOpacity(0.1),
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const AuditIssueManagementScreen(),
-                      ),
-                    ),
-                    showDivider: false,
+                  Consumer<TaskGeneratorProvider>(
+                    builder: (context, taskGen, child) {
+                      return _buildSettingsTile(
+                        context,
+                        icon: Icons.autorenew,
+                        title: 'Generate Repetitive Tasks',
+                        subtitle: taskGen.templatesNeedingGeneration > 0
+                            ? '${taskGen.templatesNeedingGeneration} template(s) ready'
+                            : taskGen.lastGenerationResult ?? 'Generate tasks from templates',
+                        iconColor: const Color(0xFF4CAF50),
+                        iconBgColor: const Color(0xFF4CAF50).withValues(alpha: 0.1),
+                        trailing: taskGen.isGenerating
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : null,
+                        onTap: taskGen.isGenerating
+                            ? null
+                            : () async {
+                                final success = await taskGen.generateDailyTasks();
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        taskGen.lastGenerationResult ?? 'Done',
+                                      ),
+                                      backgroundColor:
+                                          success ? Colors.green : Colors.orange,
+                                      behavior: SnackBarBehavior.floating,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                        showDivider: false,
+                      );
+                    },
                   ),
                 ],
               ),
@@ -264,7 +346,7 @@ class SettingsScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -278,7 +360,7 @@ class SettingsScreen extends StatelessWidget {
                     title: 'Backup Status',
                     subtitle: 'View cloud backup progress',
                     iconColor: const Color(0xFF2196F3),
-                    iconBgColor: const Color(0xFF2196F3).withOpacity(0.1),
+                    iconBgColor: const Color(0xFF2196F3).withValues(alpha: 0.1),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -316,7 +398,7 @@ class SettingsScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -330,7 +412,7 @@ class SettingsScreen extends StatelessWidget {
                     title: 'About',
                     subtitle: 'App version and information',
                     iconColor: const Color(0xFF607D8B),
-                    iconBgColor: const Color(0xFF607D8B).withOpacity(0.1),
+                    iconBgColor: const Color(0xFF607D8B).withValues(alpha: 0.1),
                     onTap: () {},
                     showDivider: true,
                   ),
@@ -340,7 +422,7 @@ class SettingsScreen extends StatelessWidget {
                     title: 'Sign Out',
                     subtitle: 'Logout from your account',
                     iconColor: const Color(0xFFE53935),
-                    iconBgColor: const Color(0xFFE53935).withOpacity(0.1),
+                    iconBgColor: const Color(0xFFE53935).withValues(alpha: 0.1),
                     onTap: () async {
                       await FirebaseAuth.instance.signOut();
                     },
@@ -351,11 +433,12 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
 
-          // Bottom spacing
+          // Bottom spacing for floating nav bar
           const SliverToBoxAdapter(
-            child: SizedBox(height: 40),
+            child: SizedBox(height: 100),
           ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -367,8 +450,9 @@ class SettingsScreen extends StatelessWidget {
     required String subtitle,
     required Color iconColor,
     required Color iconBgColor,
-    required VoidCallback onTap,
+    required VoidCallback? onTap,
     required bool showDivider,
+    Widget? trailing,
   }) {
     return Column(
       children: [
@@ -417,7 +501,7 @@ class SettingsScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                Icon(
+                trailing ?? Icon(
                   Icons.chevron_right,
                   color: Colors.grey[400],
                   size: 24,

@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:surakshith/data/models/responsible_person_model.dart';
 
 class ResponsiblePersonRepository {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final CollectionReference _responsiblePersonsCollection =
       FirebaseFirestore.instance.collection('responsible_persons');
 

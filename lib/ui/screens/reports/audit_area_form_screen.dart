@@ -3,10 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:surakshith/data/models/audit_area_entry_model.dart';
+import 'package:surakshith/data/models/user_model.dart';
 import 'package:surakshith/data/providers/audit_area_entry_provider.dart';
 import 'package:surakshith/data/providers/audit_area_provider.dart';
 import 'package:surakshith/data/providers/responsible_person_provider.dart';
 import 'package:surakshith/data/providers/audit_issue_provider.dart';
+import 'package:surakshith/data/providers/task_provider.dart';
+import 'package:surakshith/data/providers/auth_provider.dart';
+import 'package:surakshith/ui/widgets/tasks/task_assignment_widget.dart';
 
 class AuditAreaFormScreen extends StatefulWidget {
   final String clientId;
@@ -40,6 +44,10 @@ class _AuditAreaFormScreenState extends State<AuditAreaFormScreen> {
   late String _selectedRisk;
   late DateTime? _selectedDeadline;
   bool _isSaving = false;
+
+  // Task assignment fields
+  List<UserModel> _selectedTaskAssignees = [];
+  DateTime? _taskDueDate;
 
   bool get _isEditMode => widget.entry != null;
 
@@ -303,10 +311,20 @@ class _AuditAreaFormScreenState extends State<AuditAreaFormScreen> {
           });
 
           if (entryId != null) {
+            // Audit entry created successfully
+            // Now create task if users are assigned
+            if (_selectedTaskAssignees.isNotEmpty) {
+              await _createTaskFromAuditEntry(entryId);
+            }
+
             Navigator.of(context).pop(true);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: const Text('Audit entry added successfully!'),
+                content: Text(
+                  _selectedTaskAssignees.isEmpty
+                      ? 'Audit entry added successfully!'
+                      : 'Audit entry added and task(s) created!',
+                ),
                 backgroundColor: const Color(0xFF4CAF50),
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -324,6 +342,83 @@ class _AuditAreaFormScreenState extends State<AuditAreaFormScreen> {
             );
           }
         }
+      }
+    }
+  }
+
+  Future<void> _createTaskFromAuditEntry(String entryId) async {
+    try {
+      final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final auditAreaProvider = Provider.of<AuditAreaProvider>(context, listen: false);
+      final auditIssueProvider = Provider.of<AuditIssueProvider>(context, listen: false);
+
+      // Get current user (auditor)
+      final currentUser = authProvider.currentUser;
+      if (currentUser == null) return;
+
+      // Get audit area name for task title
+      final allAuditAreas = auditAreaProvider.getAllAuditAreas();
+      final auditAreaIdx = allAuditAreas.indexWhere((area) => area.id == _selectedAuditAreaId);
+      if (auditAreaIdx == -1) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Audit area not found')),
+        );
+        return;
+      }
+      final auditArea = allAuditAreas[auditAreaIdx];
+
+      // Get audit issue names
+      final allAuditIssues = auditIssueProvider.getAllAuditIssues();
+      final issueNames = _selectedAuditIssueIds.map((issueId) {
+        final issueIdx = allAuditIssues.indexWhere((i) => i.id == issueId);
+        return issueIdx != -1 ? allAuditIssues[issueIdx].name : issueId;
+      }).toList();
+
+      // Generate task title
+      final taskTitle = issueNames.isEmpty
+          ? 'Fix issue in ${auditArea.name}'
+          : 'Fix: ${issueNames.join(', ')} in ${auditArea.name}';
+
+      // Generate task description
+      final taskDescription = '''
+Audit Issue Found:
+- Area: ${auditArea.name}
+- Risk Level: ${_selectedRisk.toUpperCase()}
+
+${_observationController.text.trim().isNotEmpty ? 'Observation:\n${_observationController.text.trim()}\n\n' : ''}${_recommendationController.text.trim().isNotEmpty ? 'Recommendation:\n${_recommendationController.text.trim()}' : ''}
+'''.trim();
+
+      // Create task for each assignee
+      for (final assignee in _selectedTaskAssignees) {
+        await taskProvider.createTaskFromAudit(
+          auditReportId: widget.reportId,
+          auditEntryId: entryId,
+          auditAreaId: _selectedAuditAreaId!,
+          auditIssueIds: _selectedAuditIssueIds,
+          title: taskTitle,
+          description: taskDescription,
+          assignedTo: [assignee.email],
+          clientId: widget.clientId,
+          projectId: widget.projectId,
+          createdBy: currentUser.email!,
+          dueDate: _taskDueDate ?? DateTime.now().add(const Duration(days: 7)),
+          risk: _selectedRisk,
+          images: _existingImageUrls, // Attach audit images to task
+        );
+      }
+    } catch (e) {
+      // Task creation failed, but audit entry was saved
+      // Show warning but don't fail completely
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Warning: Task creation failed - $e'),
+            backgroundColor: Colors.orange,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        );
       }
     }
   }
@@ -714,6 +809,26 @@ class _AuditAreaFormScreenState extends State<AuditAreaFormScreen> {
                 ),
               ),
               const SizedBox(height: 32),
+
+              // Task Assignment Widget (only show in add mode, not edit mode)
+              if (!_isEditMode) ...[
+                TaskAssignmentWidget(
+                  clientId: widget.clientId,
+                  initialSelectedUsers: _selectedTaskAssignees,
+                  initialDueDate: _taskDueDate,
+                  onUsersChanged: (users) {
+                    setState(() {
+                      _selectedTaskAssignees = users;
+                    });
+                  },
+                  onDueDateChanged: (dueDate) {
+                    setState(() {
+                      _taskDueDate = dueDate;
+                    });
+                  },
+                ),
+                const SizedBox(height: 32),
+              ],
 
               // Save/Update Button
               Consumer<AuditAreaEntryProvider>(

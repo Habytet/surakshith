@@ -75,12 +75,17 @@ class _CustomReportPdfScreenState extends State<CustomReportPdfScreen> {
       final responsiblePersonProvider = context.read<ResponsiblePersonProvider>();
 
       // Get client and project
-      final client = clientProvider.getAllClients().firstWhere((c) => c.id == widget.clientId);
-      final project = projectProvider.getAllProjects().firstWhere((p) => p.id == widget.projectId);
+      final clients = clientProvider.getAllClients();
+      final clientIndex = clients.indexWhere((c) => c.id == widget.clientId);
+      final client = clientIndex != -1 ? clients[clientIndex] : null;
+
+      final projects = projectProvider.getAllProjects();
+      final projectIndex = projects.indexWhere((p) => p.id == widget.projectId);
+      final project = projectIndex != -1 ? projects[projectIndex] : null;
 
       // Set basic info
-      _fboName = client.name;
-      _outletLocation = project.name;
+      _fboName = client?.name ?? 'Unknown Client';
+      _outletLocation = project?.name ?? 'Unknown Project';
       _reportDate = DateFormat('dd.MM.yyyy').format(DateTime.now());
 
       // Get audit entries for this report
@@ -107,32 +112,25 @@ class _CustomReportPdfScreenState extends State<CustomReportPdfScreen> {
         final auditEntry = entry.value;
 
         // Get audit area name
-        final auditArea = auditAreas.firstWhere(
-          (a) => a.id == auditEntry.auditAreaId,
-          orElse: () => auditAreas.first,
-        );
+        final auditAreaIndex = auditAreas.indexWhere((a) => a.id == auditEntry.auditAreaId);
+        final auditAreaName = auditAreaIndex != -1
+            ? auditAreas[auditAreaIndex].name
+            : (auditAreas.isNotEmpty ? auditAreas.first.name : 'Unknown Area');
 
         // Get audit issue names (multiple)
         final issueNames = auditEntry.auditIssueIds
             .map((id) {
-              try {
-                return auditIssues.firstWhere((i) => i.id == id).name;
-              } catch (e) {
-                return null;
-              }
+              final issueIndex = auditIssues.indexWhere((i) => i.id == id);
+              return issueIndex != -1 ? auditIssues[issueIndex].name : null;
             })
             .where((name) => name != null)
             .join(', ');
 
         // Get responsible person name
         String responsiblePersonName = 'Store Incharge';
-        try {
-          final responsiblePerson = responsiblePersons.firstWhere(
-            (rp) => rp.id == auditEntry.responsiblePersonId,
-          );
-          responsiblePersonName = responsiblePerson.name;
-        } catch (e) {
-          // Keep default value if not found
+        final rpIndex = responsiblePersons.indexWhere((rp) => rp.id == auditEntry.responsiblePersonId);
+        if (rpIndex != -1) {
+          responsiblePersonName = responsiblePersons[rpIndex].name;
         }
 
         // Format deadline
@@ -142,7 +140,7 @@ class _CustomReportPdfScreenState extends State<CustomReportPdfScreen> {
 
         return {
           'slNo': index + 1,
-          'auditArea': auditArea.name,
+          'auditArea': auditAreaName,
           'auditIssue': issueNames.isNotEmpty ? issueNames : 'No issues',
           'observation': auditEntry.observation.isEmpty ? 'Not specified' : auditEntry.observation,
           'riskLevel': auditEntry.risk.toUpperCase(),

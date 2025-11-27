@@ -28,7 +28,7 @@ class UserProvider extends ChangeNotifier {
         notifyListeners();
       },
       onError: (error) {
-        print('Error in users stream: $error');
+        debugPrint('Error in users stream: $error');
         // Don't set error - offline mode will use cached data
       },
     );
@@ -210,20 +210,14 @@ class UserProvider extends ChangeNotifier {
 
   // Get user by ID
   UserModel? getUserById(String uid) {
-    try {
-      return _users.firstWhere((user) => user.uid == uid);
-    } catch (e) {
-      return null;
-    }
+    final index = _users.indexWhere((user) => user.uid == uid);
+    return index != -1 ? _users[index] : null;
   }
 
   // Get user by email
   UserModel? getUserByEmail(String email) {
-    try {
-      return _users.firstWhere((user) => user.email == email);
-    } catch (e) {
-      return null;
-    }
+    final index = _users.indexWhere((user) => user.email == email);
+    return index != -1 ? _users[index] : null;
   }
 
   // Get all auditors

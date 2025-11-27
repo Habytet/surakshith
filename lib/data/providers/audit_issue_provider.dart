@@ -28,7 +28,7 @@ class AuditIssueProvider extends ChangeNotifier {
         notifyListeners();
       },
       onError: (error) {
-        print('Error in audit issues stream: $error');
+        debugPrint('Error in audit issues stream: $error');
         // Don't set error - offline mode will use cached data
       },
     );

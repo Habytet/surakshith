@@ -29,7 +29,7 @@ class ProjectProvider extends ChangeNotifier {
         notifyListeners();
       },
       onError: (error) {
-        print('Error in projects stream: $error');
+        debugPrint('Error in projects stream: $error');
         // Don't set error - offline mode will use cached data
       },
     );
@@ -61,6 +61,17 @@ class ProjectProvider extends ChangeNotifier {
   // Get all projects from all clients
   List<ProjectModel> getAllProjects() {
     return _allProjects;
+  }
+
+  // Get projects by client ID
+  List<ProjectModel> getProjectsByClient(String clientId) {
+    return _allProjects.where((p) => p.clientId == clientId).toList();
+  }
+
+  // Get project by ID
+  ProjectModel? getProjectById(String projectId) {
+    final index = _allProjects.indexWhere((p) => p.id == projectId);
+    return index != -1 ? _allProjects[index] : null;
   }
 
   // Check for duplicate name (case-insensitive) within current client

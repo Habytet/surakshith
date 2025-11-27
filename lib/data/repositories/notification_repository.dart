@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:surakshith/data/models/notification_model.dart';
 
 class NotificationRepository {
@@ -24,7 +25,7 @@ class NotificationRepository {
 
       return docRef.id;
     } catch (e) {
-      print('Error creating notification: $e');
+      debugPrint('Error creating notification: $e');
       rethrow;
     }
   }
@@ -47,7 +48,7 @@ class NotificationRepository {
       await batch.commit();
       return notificationIds;
     } catch (e) {
-      print('Error creating notification batch: $e');
+      debugPrint('Error creating notification batch: $e');
       rethrow;
     }
   }
@@ -63,7 +64,7 @@ class NotificationRepository {
 
       return null;
     } catch (e) {
-      print('Error getting notification by ID: $e');
+      debugPrint('Error getting notification by ID: $e');
       rethrow;
     }
   }
@@ -81,7 +82,7 @@ class NotificationRepository {
               NotificationModel.fromMap(doc.data() as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      print('Error getting notifications by user: $e');
+      debugPrint('Error getting notifications by user: $e');
       rethrow;
     }
   }
@@ -112,7 +113,7 @@ class NotificationRepository {
               NotificationModel.fromMap(doc.data() as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      print('Error getting unread notifications: $e');
+      debugPrint('Error getting unread notifications: $e');
       rethrow;
     }
   }
@@ -140,7 +141,7 @@ class NotificationRepository {
 
       return snapshot.docs.length;
     } catch (e) {
-      print('Error getting unread count: $e');
+      debugPrint('Error getting unread count: $e');
       rethrow;
     }
   }
@@ -167,7 +168,7 @@ class NotificationRepository {
               NotificationModel.fromMap(doc.data() as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      print('Error getting notifications by task: $e');
+      debugPrint('Error getting notifications by task: $e');
       rethrow;
     }
   }
@@ -189,7 +190,7 @@ class NotificationRepository {
               NotificationModel.fromMap(doc.data() as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      print('Error getting notifications by type: $e');
+      debugPrint('Error getting notifications by type: $e');
       rethrow;
     }
   }
@@ -211,7 +212,7 @@ class NotificationRepository {
               NotificationModel.fromMap(doc.data() as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      print('Error getting recent notifications: $e');
+      debugPrint('Error getting recent notifications: $e');
       rethrow;
     }
   }
@@ -224,7 +225,7 @@ class NotificationRepository {
       });
       return true;
     } catch (e) {
-      print('Error marking notification as read: $e');
+      debugPrint('Error marking notification as read: $e');
       rethrow;
     }
   }
@@ -244,7 +245,7 @@ class NotificationRepository {
       await batch.commit();
       return true;
     } catch (e) {
-      print('Error marking multiple notifications as read: $e');
+      debugPrint('Error marking multiple notifications as read: $e');
       rethrow;
     }
   }
@@ -266,7 +267,7 @@ class NotificationRepository {
       await batch.commit();
       return true;
     } catch (e) {
-      print('Error marking all notifications as read: $e');
+      debugPrint('Error marking all notifications as read: $e');
       rethrow;
     }
   }
@@ -277,7 +278,7 @@ class NotificationRepository {
       await _notificationsCollection.doc(notificationId).delete();
       return true;
     } catch (e) {
-      print('Error deleting notification: $e');
+      debugPrint('Error deleting notification: $e');
       rethrow;
     }
   }
@@ -294,7 +295,7 @@ class NotificationRepository {
       await batch.commit();
       return true;
     } catch (e) {
-      print('Error deleting multiple notifications: $e');
+      debugPrint('Error deleting multiple notifications: $e');
       rethrow;
     }
   }
@@ -315,7 +316,7 @@ class NotificationRepository {
       await batch.commit();
       return true;
     } catch (e) {
-      print('Error deleting all notifications: $e');
+      debugPrint('Error deleting all notifications: $e');
       rethrow;
     }
   }
@@ -340,7 +341,7 @@ class NotificationRepository {
       await batch.commit();
       return snapshot.docs.length;
     } catch (e) {
-      print('Error cleaning up old notifications: $e');
+      debugPrint('Error cleaning up old notifications: $e');
       rethrow;
     }
   }

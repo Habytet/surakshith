@@ -33,7 +33,7 @@ class ReportProvider extends ChangeNotifier {
         notifyListeners();
       },
       onError: (error) {
-        print('Error in reports stream: $error');
+        debugPrint('Error in reports stream: $error');
         // Don't set error - offline mode will use cached data
       },
     );

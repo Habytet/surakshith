@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:surakshith/data/models/audit_area_model.dart';
 
 class AuditAreaRepository {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final CollectionReference _auditAreasCollection =
       FirebaseFirestore.instance.collection('audit_areas');
 

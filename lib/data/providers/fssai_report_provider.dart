@@ -68,7 +68,7 @@ class FssaiReportProvider extends ChangeNotifier {
           notifyListeners();
         },
         onError: (error) {
-          print('Error in FSSAI report stream: $error');
+          debugPrint('Error in FSSAI report stream: $error');
           _setError('Failed to load FSSAI report: $error');
         },
       );

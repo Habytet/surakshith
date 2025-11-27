@@ -28,7 +28,7 @@ class AuditAreaProvider extends ChangeNotifier {
         notifyListeners();
       },
       onError: (error) {
-        print('Error in audit areas stream: $error');
+        debugPrint('Error in audit areas stream: $error');
         // Don't set error - offline mode will use cached data
       },
     );

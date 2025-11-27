@@ -34,7 +34,7 @@ class AuditAreaEntryProvider extends ChangeNotifier {
         notifyListeners();
       },
       onError: (error) {
-        print('Error in entries stream: $error');
+        debugPrint('Error in entries stream: $error');
         _setError('Failed to load entries: $error');
       },
     );
@@ -104,7 +104,7 @@ class AuditAreaEntryProvider extends ChangeNotifier {
         final tempEntryId = DateTime.now().millisecondsSinceEpoch.toString();
 
         for (int i = 0; i < imageFiles.length; i++) {
-          print('📤 Uploading image ${i + 1}/${imageFiles.length}...');
+          debugPrint('📤 Uploading image ${i + 1}/${imageFiles.length}...');
           final imageUrl = await _storageService.uploadAuditEntryImage(
             reportId: reportId,
             entryId: tempEntryId,
@@ -112,9 +112,9 @@ class AuditAreaEntryProvider extends ChangeNotifier {
           );
           if (imageUrl != null) {
             imageUrls.add(imageUrl);
-            print('✅ Image ${i + 1} uploaded successfully');
+            debugPrint('✅ Image ${i + 1} uploaded successfully');
           } else {
-            print('❌ Image ${i + 1} failed to upload');
+            debugPrint('❌ Image ${i + 1} failed to upload');
           }
         }
       }
@@ -134,7 +134,7 @@ class AuditAreaEntryProvider extends ChangeNotifier {
         imageUrls: imageUrls,
       );
 
-      print('✅ Entry created in Firestore');
+      debugPrint('✅ Entry created in Firestore');
       _setLoading(false);
       return entryId;
     } catch (e) {
@@ -192,18 +192,18 @@ class AuditAreaEntryProvider extends ChangeNotifier {
           .toList();
       for (final imageUrl in removedImages) {
         await _storageService.deleteReportImage(imageUrl: imageUrl);
-        print('🗑️ Deleted removed image from Storage');
+        debugPrint('🗑️ Deleted removed image from Storage');
       }
 
       // Upload new images to Firebase Storage
       if (newImageFiles != null && newImageFiles.isNotEmpty) {
         for (int i = 0; i < newImageFiles.length; i++) {
           if (finalImageUrls.length >= 2) {
-            print('⚠️ Skipping image ${i + 1} - max 2 images limit reached');
+            debugPrint('⚠️ Skipping image ${i + 1} - max 2 images limit reached');
             break;
           }
 
-          print('📤 Uploading new image ${i + 1}/${newImageFiles.length}...');
+          debugPrint('📤 Uploading new image ${i + 1}/${newImageFiles.length}...');
           final imageUrl = await _storageService.uploadAuditEntryImage(
             reportId: reportId,
             entryId: id,
@@ -211,9 +211,9 @@ class AuditAreaEntryProvider extends ChangeNotifier {
           );
           if (imageUrl != null) {
             finalImageUrls.add(imageUrl);
-            print('✅ New image ${i + 1} uploaded successfully');
+            debugPrint('✅ New image ${i + 1} uploaded successfully');
           } else {
-            print('❌ New image ${i + 1} failed to upload');
+            debugPrint('❌ New image ${i + 1} failed to upload');
           }
         }
       }
@@ -234,7 +234,7 @@ class AuditAreaEntryProvider extends ChangeNotifier {
         imageUrls: finalImageUrls,
       );
 
-      print('✅ Entry updated in Firestore');
+      debugPrint('✅ Entry updated in Firestore');
       _setLoading(false);
       return true;
     } catch (e) {
@@ -272,7 +272,7 @@ class AuditAreaEntryProvider extends ChangeNotifier {
         id: id,
       );
 
-      print('✅ Entry deleted from Firestore');
+      debugPrint('✅ Entry deleted from Firestore');
       _setLoading(false);
       return true;
     } catch (e) {
@@ -321,7 +321,7 @@ class AuditAreaEntryProvider extends ChangeNotifier {
       // Delete from Firebase Storage
       await _storageService.deleteReportImage(imageUrl: imageUrl);
 
-      print('✅ Image deleted from entry');
+      debugPrint('✅ Image deleted from entry');
       _setLoading(false);
       return true;
     } catch (e) {

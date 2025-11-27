@@ -547,7 +547,7 @@ class TaskProvider extends ChangeNotifier {
         }
       }
     } catch (e) {
-      print('Error generating daily repetitive tasks: $e');
+      debugPrint('Error generating daily repetitive tasks: $e');
     }
   }
 

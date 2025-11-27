@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:surakshith/data/models/task_model.dart';
 
 class TaskRepository {
@@ -23,7 +24,7 @@ class TaskRepository {
 
       return docRef.id;
     } catch (e) {
-      print('Error creating task: $e');
+      debugPrint('Error creating task: $e');
       rethrow;
     }
   }
@@ -45,7 +46,7 @@ class TaskRepository {
       await batch.commit();
       return taskIds;
     } catch (e) {
-      print('Error creating task batch: $e');
+      debugPrint('Error creating task batch: $e');
       rethrow;
     }
   }
@@ -61,7 +62,7 @@ class TaskRepository {
 
       return null;
     } catch (e) {
-      print('Error getting task by ID: $e');
+      debugPrint('Error getting task by ID: $e');
       rethrow;
     }
   }
@@ -75,7 +76,7 @@ class TaskRepository {
           .map((doc) => TaskModel.fromMap(doc.data() as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      print('Error getting all tasks: $e');
+      debugPrint('Error getting all tasks: $e');
       rethrow;
     }
   }
@@ -102,7 +103,7 @@ class TaskRepository {
           .map((doc) => TaskModel.fromMap(doc.data() as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      print('Error getting tasks by client: $e');
+      debugPrint('Error getting tasks by client: $e');
       rethrow;
     }
   }
@@ -130,7 +131,7 @@ class TaskRepository {
           .map((doc) => TaskModel.fromMap(doc.data() as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      print('Error getting tasks by assignee: $e');
+      debugPrint('Error getting tasks by assignee: $e');
       rethrow;
     }
   }
@@ -158,7 +159,7 @@ class TaskRepository {
           .map((doc) => TaskModel.fromMap(doc.data() as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      print('Error getting tasks by status: $e');
+      debugPrint('Error getting tasks by status: $e');
       rethrow;
     }
   }
@@ -186,7 +187,7 @@ class TaskRepository {
           .map((doc) => TaskModel.fromMap(doc.data() as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      print('Error getting tasks by source: $e');
+      debugPrint('Error getting tasks by source: $e');
       rethrow;
     }
   }
@@ -214,7 +215,7 @@ class TaskRepository {
           .map((doc) => TaskModel.fromMap(doc.data() as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      print('Error getting tasks by audit report: $e');
+      debugPrint('Error getting tasks by audit report: $e');
       rethrow;
     }
   }
@@ -231,7 +232,7 @@ class TaskRepository {
           .map((doc) => TaskModel.fromMap(doc.data() as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      print('Error getting repetitive tasks: $e');
+      debugPrint('Error getting repetitive tasks: $e');
       rethrow;
     }
   }
@@ -266,7 +267,7 @@ class TaskRepository {
           .map((doc) => TaskModel.fromMap(doc.data() as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      print('Error getting overdue tasks: $e');
+      debugPrint('Error getting overdue tasks: $e');
       rethrow;
     }
   }
@@ -277,7 +278,7 @@ class TaskRepository {
       await _tasksCollection.doc(task.id).update(task.toMap());
       return true;
     } catch (e) {
-      print('Error updating task: $e');
+      debugPrint('Error updating task: $e');
       rethrow;
     }
   }
@@ -308,7 +309,7 @@ class TaskRepository {
       await _tasksCollection.doc(taskId).update(updateData);
       return true;
     } catch (e) {
-      print('Error updating task status: $e');
+      debugPrint('Error updating task status: $e');
       rethrow;
     }
   }
@@ -339,7 +340,7 @@ class TaskRepository {
       await _tasksCollection.doc(taskId).update(updateData);
       return true;
     } catch (e) {
-      print('Error submitting task: $e');
+      debugPrint('Error submitting task: $e');
       rethrow;
     }
   }
@@ -363,7 +364,7 @@ class TaskRepository {
       await _tasksCollection.doc(taskId).update(updateData);
       return true;
     } catch (e) {
-      print('Error approving task: $e');
+      debugPrint('Error approving task: $e');
       rethrow;
     }
   }
@@ -393,7 +394,7 @@ class TaskRepository {
       await _tasksCollection.doc(taskId).update(updateData);
       return true;
     } catch (e) {
-      print('Error rejecting task: $e');
+      debugPrint('Error rejecting task: $e');
       rethrow;
     }
   }
@@ -417,7 +418,7 @@ class TaskRepository {
       await _tasksCollection.doc(taskId).update(updateData);
       return true;
     } catch (e) {
-      print('Error marking task incomplete: $e');
+      debugPrint('Error marking task incomplete: $e');
       rethrow;
     }
   }
@@ -428,7 +429,7 @@ class TaskRepository {
       await _tasksCollection.doc(taskId).delete();
       return true;
     } catch (e) {
-      print('Error deleting task: $e');
+      debugPrint('Error deleting task: $e');
       rethrow;
     }
   }
@@ -445,7 +446,7 @@ class TaskRepository {
       await batch.commit();
       return true;
     } catch (e) {
-      print('Error deleting task batch: $e');
+      debugPrint('Error deleting task batch: $e');
       rethrow;
     }
   }
@@ -495,7 +496,7 @@ class TaskRepository {
           .map((doc) => TaskModel.fromMap(doc.data() as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      print('Error getting tasks with filters: $e');
+      debugPrint('Error getting tasks with filters: $e');
       rethrow;
     }
   }
@@ -528,7 +529,7 @@ class TaskRepository {
 
       return counts;
     } catch (e) {
-      print('Error getting task counts: $e');
+      debugPrint('Error getting task counts: $e');
       rethrow;
     }
   }

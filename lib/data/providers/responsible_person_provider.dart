@@ -28,7 +28,7 @@ class ResponsiblePersonProvider extends ChangeNotifier {
         notifyListeners();
       },
       onError: (error) {
-        print('Error in responsible persons stream: $error');
+        debugPrint('Error in responsible persons stream: $error');
         // Don't set error - offline mode will use cached data
       },
     );

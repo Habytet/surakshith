@@ -585,7 +585,7 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.04),
+                                color: Colors.black.withValues(alpha: 0.04),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -625,10 +625,10 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
                                           enabled: false,
                                         ),
                                         child: Text(
-                                          clients.firstWhere(
-                                            (c) => c.id == _selectedClientId,
-                                            orElse: () => clients.first,
-                                          ).name,
+                                          (() {
+                                            final idx = clients.indexWhere((c) => c.id == _selectedClientId);
+                                            return idx != -1 ? clients[idx].name : (clients.isNotEmpty ? clients.first.name : 'No client');
+                                          })(),
                                           style: TextStyle(fontSize: Platform.isIOS ? 14 : 15),
                                         ),
                                       ),
@@ -684,10 +684,11 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
                                           enabled: false,
                                         ),
                                         child: Text(
-                                          projectProvider.getAllProjects().firstWhere(
-                                            (p) => p.id == _selectedProjectId,
-                                            orElse: () => projectProvider.getAllProjects().first,
-                                          ).name,
+                                          (() {
+                                            final allProjects = projectProvider.getAllProjects();
+                                            final idx = allProjects.indexWhere((p) => p.id == _selectedProjectId);
+                                            return idx != -1 ? allProjects[idx].name : (allProjects.isNotEmpty ? allProjects.first.name : 'No project');
+                                          })(),
                                           style: TextStyle(fontSize: Platform.isIOS ? 14 : 15),
                                         ),
                                       ),
@@ -717,12 +718,11 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
                                                 setState(() {
                                                   _selectedProjectId = value;
                                                   if (value != null) {
-                                                    final selectedProject =
-                                                        projects.firstWhere(
-                                                      (p) => p.id == value,
-                                                    );
-                                                    _contactNameController.text =
-                                                        selectedProject.contactName ?? '';
+                                                    final idx = projects.indexWhere((p) => p.id == value);
+                                                    if (idx != -1) {
+                                                      _contactNameController.text =
+                                                          projects[idx].contactName ?? '';
+                                                    }
                                                   } else {
                                                     _contactNameController.clear();
                                                   }
@@ -828,7 +828,7 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.04),
+                                color: Colors.black.withValues(alpha: 0.04),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -881,18 +881,16 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
                                               final auditAreas = auditAreaProvider.getAllAuditAreas();
                                               final auditIssues = auditIssueProvider.getAllAuditIssues();
 
-                                              final auditAreaName = auditAreas
-                                                  .firstWhere((a) => a.id == entry.auditAreaId, orElse: () => auditAreas.first)
-                                                  .name;
+                                              final auditAreaIdx = auditAreas.indexWhere((a) => a.id == entry.auditAreaId);
+                                              final auditAreaName = auditAreaIdx != -1
+                                                  ? auditAreas[auditAreaIdx].name
+                                                  : (auditAreas.isNotEmpty ? auditAreas.first.name : 'Unknown Area');
 
                                               // Get all audit issue names for the selected IDs
                                               final auditIssueNames = entry.auditIssueIds
                                                   .map((id) {
-                                                    try {
-                                                      return auditIssues.firstWhere((i) => i.id == id).name;
-                                                    } catch (e) {
-                                                      return null;
-                                                    }
+                                                    final issueIdx = auditIssues.indexWhere((i) => i.id == id);
+                                                    return issueIdx != -1 ? auditIssues[issueIdx].name : null;
                                                   })
                                                   .where((name) => name != null)
                                                   .toList();
@@ -978,7 +976,7 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: Colors.black.withValues(alpha: 0.1),
                             blurRadius: 16,
                             offset: const Offset(0, -4),
                           ),

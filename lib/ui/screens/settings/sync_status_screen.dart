@@ -252,22 +252,18 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
   }) {
     // Get report name (use formatted date since ReportModel doesn't have a name field)
     String reportName = 'Unknown Report';
-    try {
-      final report = reportProvider.getAllReports()
-        .firstWhere((r) => r.id == entry.reportId);
-      reportName = 'Report ${DateFormat('dd MMM yyyy').format(report.reportDate)}';
-    } catch (e) {
-      // Keep default
+    final allReports = reportProvider.getAllReports();
+    final reportIdx = allReports.indexWhere((r) => r.id == entry.reportId);
+    if (reportIdx != -1) {
+      reportName = 'Report ${DateFormat('dd MMM yyyy').format(allReports[reportIdx].reportDate)}';
     }
 
     // Get audit area name
     String auditAreaName = 'Unknown Area';
-    try {
-      final auditArea = auditAreaProvider.getAllAuditAreas()
-        .firstWhere((a) => a.id == entry.auditAreaId);
-      auditAreaName = auditArea.name;
-    } catch (e) {
-      // Keep default
+    final allAuditAreas = auditAreaProvider.getAllAuditAreas();
+    final auditAreaIdx = allAuditAreas.indexWhere((a) => a.id == entry.auditAreaId);
+    if (auditAreaIdx != -1) {
+      auditAreaName = allAuditAreas[auditAreaIdx].name;
     }
 
     // Format timestamp
@@ -299,7 +295,7 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: statusColor.withOpacity(0.3),
+          color: statusColor.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -355,7 +351,7 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.1),
+                    color: statusColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: const Text(

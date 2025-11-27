@@ -87,7 +87,7 @@ class NotificationProvider extends ChangeNotifier {
           notifyListeners();
         },
         onError: (error) {
-          print('Error listening to unread count: $error');
+          debugPrint('Error listening to unread count: $error');
         },
       );
     } catch (e) {
@@ -348,6 +348,15 @@ class NotificationProvider extends ChangeNotifier {
     }
   }
 
+  // Stream helpers - Pass-through methods for UI
+  Stream<List<NotificationModel>> getNotificationsByUserStream(String userId) {
+    return _notificationRepository.getNotificationsByUserStream(userId);
+  }
+
+  Stream<int> getUnreadCountStream(String userId) {
+    return _notificationRepository.getUnreadCountStream(userId);
+  }
+
   // Helper methods
   void _setLoading(bool loading) {
     _isLoading = loading;
@@ -357,10 +366,6 @@ class NotificationProvider extends ChangeNotifier {
   void _setError(String error) {
     _errorMessage = error;
     notifyListeners();
-  }
-
-  void _clearError() {
-    _errorMessage = '';
   }
 
   @override

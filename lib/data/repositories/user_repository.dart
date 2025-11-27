@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:surakshith/data/models/user_model.dart';
 
 class UserRepository {
@@ -122,7 +123,7 @@ class UserRepository {
 
       return null;
     } catch (e) {
-      print('Error getting user by ID: $e');
+      debugPrint('Error getting user by ID: $e');
       rethrow;
     }
   }
@@ -152,7 +153,7 @@ class UserRepository {
 
       return null;
     } catch (e) {
-      print('Error getting user by email: $e');
+      debugPrint('Error getting user by email: $e');
       rethrow;
     }
   }
@@ -169,7 +170,7 @@ class UserRepository {
           .map((doc) => UserModel.fromMap(doc.data() as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      print('Error getting users by role: $e');
+      debugPrint('Error getting users by role: $e');
       rethrow;
     }
   }
@@ -197,7 +198,7 @@ class UserRepository {
           .map((doc) => UserModel.fromMap(doc.data() as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      print('Error getting users by client: $e');
+      debugPrint('Error getting users by client: $e');
       rethrow;
     }
   }
@@ -229,7 +230,7 @@ class UserRepository {
           .map((doc) => UserModel.fromMap(doc.data() as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      print('Error getting client users by role: $e');
+      debugPrint('Error getting client users by role: $e');
       rethrow;
     }
   }
@@ -264,7 +265,7 @@ class UserRepository {
           .map((doc) => UserModel.fromMap(doc.data() as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      print('Error getting active users: $e');
+      debugPrint('Error getting active users: $e');
       rethrow;
     }
   }
@@ -289,7 +290,7 @@ class UserRepository {
           .map((doc) => UserModel.fromMap(doc.data() as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      print('Error getting inactive users: $e');
+      debugPrint('Error getting inactive users: $e');
       rethrow;
     }
   }

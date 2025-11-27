@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 
 class StorageService {
   final FirebaseStorage _storage = FirebaseStorage.instance;
@@ -31,7 +32,7 @@ class StorageService {
 
       return null;
     } catch (e) {
-      print('Error uploading image: $e');
+      debugPrint('Error uploading image: $e');
       return null;
     }
   }
@@ -43,7 +44,7 @@ class StorageService {
       await ref.delete().timeout(const Duration(seconds: 10));
       return true;
     } catch (e) {
-      print('Error deleting image: $e');
+      debugPrint('Error deleting image: $e');
       return false;
     }
   }
@@ -60,7 +61,7 @@ class StorageService {
 
       return true;
     } catch (e) {
-      print('Error deleting all report images: $e');
+      debugPrint('Error deleting all report images: $e');
       return false;
     }
   }
@@ -95,23 +96,23 @@ class StorageService {
 
         if (snapshot.state == TaskState.success) {
           final downloadUrl = await ref.getDownloadURL();
-          print('✅ Audit entry image uploaded successfully on attempt $attempt');
+          debugPrint('✅ Audit entry image uploaded successfully on attempt $attempt');
           return downloadUrl;
         }
 
         return null;
       } catch (e) {
-        print('❌ Error uploading audit entry image (attempt $attempt/$maxRetries): $e');
+        debugPrint('❌ Error uploading audit entry image (attempt $attempt/$maxRetries): $e');
 
         // If this was the last attempt, give up
         if (attempt == maxRetries) {
-          print('🔴 Failed to upload audit entry image after $maxRetries attempts');
+          debugPrint('🔴 Failed to upload audit entry image after $maxRetries attempts');
           return null;
         }
 
         // Wait before retrying (exponential backoff: 2s, 4s, 8s)
         final waitTime = Duration(seconds: 2 * attempt);
-        print('⏳ Retrying in ${waitTime.inSeconds}s...');
+        debugPrint('⏳ Retrying in ${waitTime.inSeconds}s...');
         await Future.delayed(waitTime);
       }
     }
@@ -136,7 +137,7 @@ class StorageService {
 
       return true;
     } catch (e) {
-      print('Error deleting all audit entry images: $e');
+      debugPrint('Error deleting all audit entry images: $e');
       return false;
     }
   }

@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:surakshith/data/models/audit_issue_model.dart';
 
 class AuditIssueRepository {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final CollectionReference _auditIssuesCollection =
       FirebaseFirestore.instance.collection('audit_issues');
 
